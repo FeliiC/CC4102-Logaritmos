@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "nodo.h"
+#include "split.c"
 
 // función para verificar si un nodo esta lleno
 int nodo_lleno(Nodo *nodo) {
