@@ -10,8 +10,8 @@ void ejecutar_experimento(int N){
     Nodo **arbolB = inicializar_arbol(tamanoB);
     Nodo **arbolBPlus = inicializar_arbol(tamanoBPlus);
 
-    printf("\n-------- INSERTANDO EN ÁRBOL --------\n");
     // Insertar
+    printf("\n-------- INSERTANDO EN ÁRBOL --------\n");
     clock_t inicio_creacion = clock();
     FILE* archivo = fopen("datos.bin", "rb");
     if (archivo == NULL) {
@@ -31,13 +31,13 @@ void ejecutar_experimento(int N){
     clock_t fin_creacion = clock();
     double tiempo_creacion = ((double)(fin_creacion - inicio_creacion)) / CLOCKS_PER_SEC;
 
-    printf("\n-------- ESCRIBIENDO EN DISCO --------\n");
     // Escribir a disco
+    printf("\n-------- ESCRIBIENDO EN DISCO --------\n");
     escribir_a_disco(arbolB, tamanoB, "arbolB.bin");
     escribir_a_disco(arbolBPlus, tamanoBPlus, "arbolBPlus.bin");
 
-    printf("\n-------- REALIZANDO BÚSQUEDAS --------\n");
     // Búsquedas
+    printf("\n-------- REALIZANDO BÚSQUEDAS --------\n");
     int llave_min = 1546300800;
     int llave_max = 1754006400;
     double tiempo_busqueda_B;
