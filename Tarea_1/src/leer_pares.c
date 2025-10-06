@@ -1,0 +1,27 @@
+#include <stdio.h>
+#include "estructuras/nodo.c"
+
+// Leer los primeros N pares del archivo
+void leer_pares_desde_archivo(const char* nombre_archivo) {
+    FILE* archivo = fopen(nombre_archivo, "rb");
+    if (!archivo) {
+        printf("Error: No se pudo abrir el archivo %s\n", nombre_archivo);
+        return;
+    }
+    
+    Pair pares[10];
+    int leidos = fread(pares, sizeof(Pair), 10, archivo);
+    
+    // Imprimir los pares leídos
+    printf("Primeros %d pares del archivo '%s':\n", leidos, nombre_archivo);
+    printf("----------------------------------------\n");
+    for (int i = 0; i < leidos; i++) {
+        printf("%d\t%.4f\n", pares[i].llave, pares[i].valor);
+    }
+    
+    fclose(archivo);
+}
+
+void main(){
+    leer_pares_desde_archivo("datos.bin");
+}
