@@ -23,5 +23,5 @@ void leer_pares_desde_archivo(const char* nombre_archivo) {
 }
 
 void main(){
-    leer_pares_desde_archivo("datos.bin");
+    leer_pares_desde_archivo("../../datos_bin/datos.bin");
 }

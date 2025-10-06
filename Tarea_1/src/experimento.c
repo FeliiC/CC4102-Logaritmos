@@ -18,7 +18,7 @@ void ejecutar_experimento(int N){
 
     // Insertar
     printf("Insertando en arbol\n");
-    FILE* archivo = fopen("datos.bin", "rb");
+    FILE* archivo = fopen("../datos_bin/datos.bin", "rb");
     if (archivo == NULL) {
         printf("Error al abrir el archivo: datos.bin\n");
         liberar_arbol(arbolB, tamanoB);
@@ -48,9 +48,9 @@ void ejecutar_experimento(int N){
     // Escribir a disco
     printf("Escribiendo en disco\n");
     printf("-> escribir arbolB\n");
-    escribir_a_disco(arbolB, tamanoB, "arbolB.bin");
+    escribir_a_disco(arbolB, tamanoB, "../datos_bin/arbolB.bin");
     printf("-> escribir arbolB+\n");
-    escribir_a_disco(arbolBPlus, tamanoBPlus, "arbolBPlus.bin");
+    escribir_a_disco(arbolBPlus, tamanoBPlus, "../datos_bin/arbolBPlus.bin");
 
     // Búsquedas
     printf("Realizando busquedas\n");
@@ -65,12 +65,12 @@ void ejecutar_experimento(int N){
 
         // Árbol B
         clock_t inicio_busqueda_B = clock();
-        buscar_rango_desde_archivo("arbolB.bin", l, u);
+        buscar_rango_desde_archivo("../datos_bin/arbolB.bin", l, u);
         clock_t fin_busqueda_B = clock();
         tiempo_busqueda_B += ((double)(fin_busqueda_B - inicio_busqueda_B)) / CLOCKS_PER_SEC;
         //Árbol B+
         clock_t inicio_busqueda_BPlus = clock();
-        buscar_rango_desde_archivo("arbolBPlus.bin", l, u);
+        buscar_rango_desde_archivo("../datos_bin/arbolBPlus.bin", l, u);
         clock_t fin_busqueda_BPlus = clock();
         tiempo_busqueda_BPlus += ((double)(fin_busqueda_BPlus - inicio_busqueda_BPlus)) / CLOCKS_PER_SEC;
     }
