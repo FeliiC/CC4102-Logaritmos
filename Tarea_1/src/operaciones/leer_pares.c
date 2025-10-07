@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "estructuras/nodo.c"
+#include "../estructuras/nodo.c"
 
 // Leer los primeros N pares del archivo
 void leer_pares_desde_archivo(const char* nombre_archivo) {
@@ -23,5 +23,5 @@ void leer_pares_desde_archivo(const char* nombre_archivo) {
 }
 
 void main(){
-    leer_pares_desde_archivo("../../datos_bin/datos.bin");
+    leer_pares_desde_archivo("../../datos_bin/arbolBPlus.bin");
 }

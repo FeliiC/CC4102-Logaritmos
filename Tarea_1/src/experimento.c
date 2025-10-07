@@ -11,7 +11,8 @@
 void ejecutar_experimento(int N){
     printf("Crear arbol\n");
     // Crear árboles
-    int tamanoB, tamanoBPlus;
+    int tamanoB = N;
+    int tamanoBPlus = N;
     int raizB, raizBPlus = 0;
     Nodo **arbolB = inicializar_arbol(tamanoB);
     Nodo **arbolBPlus = inicializar_arbol(tamanoBPlus);
@@ -58,24 +59,33 @@ void ejecutar_experimento(int N){
     int llave_max = 1754006400;
     double tiempo_busqueda_B = 0.0;
     double tiempo_busqueda_BPlus = 0.0;
+    int total_resultados_B=0;
+    int total_resultados_BPlus=0;
     srand(time(NULL));          // semilla para números aleatorios
     for (int i = 0; i<50; i++) {
         int l = llave_min + rand() % (llave_max - llave_min + 1);   // ver si esta en el rango esperado
         int u = l + 604800;
 
         // Árbol B
+        int cantidad_B=0;
         clock_t inicio_busqueda_B = clock();
-        buscar_rango_desde_archivo("../datos_bin/arbolB.bin", l, u);
+        Pair* resultados_B = buscar_rango_desde_archivo("../datos_bin/arbolB.bin", l, u, &cantidad_B);
         clock_t fin_busqueda_B = clock();
         tiempo_busqueda_B += ((double)(fin_busqueda_B - inicio_busqueda_B)) / CLOCKS_PER_SEC;
+        total_resultados_B += cantidad_B;
         //Árbol B+
+        int cantidad_BPlus=0;
         clock_t inicio_busqueda_BPlus = clock();
-        buscar_rango_desde_archivo("../datos_bin/arbolBPlus.bin", l, u);
+        Pair* resultados_BPlus = buscar_rango_desde_archivo("../datos_bin/arbolBPlus.bin", l, u, &cantidad_BPlus);
         clock_t fin_busqueda_BPlus = clock();
         tiempo_busqueda_BPlus += ((double)(fin_busqueda_BPlus - inicio_busqueda_BPlus)) / CLOCKS_PER_SEC;
+        total_resultados_BPlus += cantidad_BPlus;
     }
     double promedio_busqueda_B = tiempo_busqueda_B / 50;
     double promedio_busqueda_BPlus = tiempo_busqueda_BPlus / 50;
+    // Calcular porcentajes
+    double porcentaje_promedio_B = ((double)total_resultados_B / (50.0 * N)) * 100.0;
+    double porcentaje_promedio_BPlus = ((double)total_resultados_BPlus / (50.0 * N)) * 100.0;
 
     // Resultados
     printf("\n-------- Resultados experimento --------\n", N);
@@ -83,16 +93,18 @@ void ejecutar_experimento(int N){
     printf("--- Arbol B ---\n");
     printf("Tiempo de creacion arbolB: %.6f segundos\n", tiempo_creacion_B);
     printf("I/Os durante insercion: \n");
-    printf("Tamano arbol: %d nodos\n", tamanoB);
+    printf("Tamano arbol: %d nodos\n", contar_nodos_en_arbol("../datos_bin/arbolB.bin"));
     printf("Tiempo promedio de busqueda: %.6f segundos\n", promedio_busqueda_B);
     printf("Promedio I/Os de busqueda: \n");
+    printf("Porcentaje promedio de datos encontrados: %.2f%%\n", porcentaje_promedio_B);
 
     printf("--- Arbol B+ ---\n");
     printf("Tiempo de creacion arbolB: %.6f segundos\n", tiempo_creacion_BPlus);
     printf("I/Os durante insercion: \n");
-    printf("Tamano arbol: %d nodos\n", tamanoBPlus);
+    printf("Tamano arbol: %d nodos\n", contar_nodos_en_arbol("../datos_bin/arbolBPlus.bin"));
     printf("Tiempo promedio de busqueda: %.6f segundos\n", promedio_busqueda_BPlus);
     printf("Promedio I/Os de busqueda: \n");
+    printf("Porcentaje promedio de datos encontrados: %.2f%%\n", porcentaje_promedio_BPlus);
 
     liberar_arbol(arbolB, tamanoB);
     liberar_arbol(arbolBPlus, tamanoBPlus);
@@ -100,7 +112,7 @@ void ejecutar_experimento(int N){
 
 void main(){
     printf("\n-------- INICIO EXPERIMENTOS --------\n");
-    for(int i=15; i<27; i++){       
+    for(int i=9; i<10; i++){       
         int N = pow(2, i);
         printf("\n-------- EJECUTANDO EXPERIMENTO N = 2^%d --------\n", i);
         ejecutar_experimento(N);

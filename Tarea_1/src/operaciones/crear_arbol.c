@@ -72,3 +72,28 @@ void escribir_a_disco(Nodo **arbol, int tamano_arbol, const char* nombre_archivo
     }
     fclose(archivo);
 }
+
+// Función para contar la cantidad de nodos en un archivo de árbol
+int contar_nodos_en_arbol(const char* nombre_archivo) {
+    FILE* archivo = fopen(nombre_archivo, "rb");
+    if (archivo == NULL) {
+        printf("Error: No se pudo abrir el archivo %s\n", nombre_archivo);
+        return -1;
+    }
+    
+    // Calcular el tamaño del archivo y número de nodos
+    fseek(archivo, 0, SEEK_END);
+    long tamano_archivo = ftell(archivo);
+    rewind(archivo);
+    
+    int tamano_nodo = sizeof(Nodo);
+    int num_nodos = tamano_archivo / tamano_nodo;
+    
+    if (tamano_archivo % tamano_nodo != 0) {
+        printf("Advertencia: El tamaño del archivo %s no es múltiplo del tamaño del nodo\n", nombre_archivo);
+    }
+    
+    fclose(archivo);
+    
+    return num_nodos;
+}
