@@ -1,72 +1,176 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "../estructuras/estadisticas.h"
 
-void buscar_rango_recursivo(FILE *archivo, Nodo *nodo, int indice_actual, int limite_inf, int limite_sup, int tamano_nodo, Pair** resultados, int* cantidad);
+// funcion auxiliar para buscar en arbol B recursiva
+void buscar_rango_arbolB_recursivo(FILE *archivo, int indice_actual, int limite_inf, int limite_sup, int tamaño_nodo, Pair** resultados, int* cantidad, int* capacidad) {
+    Nodo nodo_actual;
+    fseek(archivo, indice_actual * tamaño_nodo, SEEK_SET);
+    fread(&nodo_actual, tamaño_nodo, 1, archivo);
+    contar_lectura_busqueda();
+    
+    if (nodo_actual.es_interno == 0) {
+        // revisar todos los pares en el rango
+        for (int i = 0; i < nodo_actual.k; i++) {
+            if (nodo_actual.llaves_valores[i].llave >= limite_inf && 
+                nodo_actual.llaves_valores[i].llave <= limite_sup) {
+                // expandir si falta espacio
+                if (*cantidad >= *capacidad) {
+                    *capacidad *= 2;
+                    *resultados = realloc(*resultados, sizeof(Pair) * (*capacidad));
+                }
+                (*resultados)[*cantidad] = nodo_actual.llaves_valores[i];
+                (*cantidad)++;
+            }
+        }
+    } else {
+        // revisar los pares del nodo interno
+        for (int i = 0; i < nodo_actual.k; i++) {
+            if (nodo_actual.llaves_valores[i].llave >= limite_inf && 
+                nodo_actual.llaves_valores[i].llave <= limite_sup) {
+                // expandir si falta espacio
+                if (*cantidad >= *capacidad) {
+                    *capacidad *= 2;
+                    *resultados = realloc(*resultados, sizeof(Pair) * (*capacidad));
+                }
+                (*resultados)[*cantidad] = nodo_actual.llaves_valores[i];
+                (*cantidad)++;
+            }
+        }
+        
+        // buscar en todos los hijos que puedan contener elementos en el rango
+        for (int i = 0; i <= nodo_actual.k; i++) {
+            int debe_buscar = 0;
+            
+            if (i == 0) {
+                // el primer hijo contiene llaves <= llaves_valores[0]
+                debe_buscar = (limite_inf <= nodo_actual.llaves_valores[0].llave);
+            } else if (i == nodo_actual.k) {
+                // el ultimo hijo contiene llaves > llaves_valores[k-1]
+                debe_buscar = (limite_sup > nodo_actual.llaves_valores[nodo_actual.k - 1].llave);
+            } else {
+                // hijo intermedio contiene llaves en (llaves_valores[i-1], llaves_valores[i])
+                int llave_min_hijo = nodo_actual.llaves_valores[i - 1].llave;
+                int llave_max_hijo = nodo_actual.llaves_valores[i].llave;
+                debe_buscar = (limite_inf <= llave_max_hijo) && (limite_sup > llave_min_hijo);
+            }
+            
+            if (debe_buscar && nodo_actual.hijos[i] != -1) {
+                buscar_rango_arbolB_recursivo(archivo, nodo_actual.hijos[i], limite_inf, limite_sup, tamaño_nodo, resultados, cantidad, capacidad);
+            }
+        }
+    }
+}
 
-// funcion para buscar un rango de llaves en el archivo binario
-Pair* buscar_rango_desde_archivo(const char *nombre_archivo, int limite_inf, int limite_sup, int* cantidad_resultados) {
-    Pair* resultados = malloc(sizeof(Pair) * 1000);
+// funcion principal para buscar en arbol B
+Pair* buscar_rango_arbolB(const char *nombre_archivo, int limite_inf, int limite_sup, int* cantidad_resultados) {
+    int capacidad = 1000;
+    Pair* resultados = malloc(sizeof(Pair) * capacidad);
     int cantidad = 0;
     FILE *archivo = fopen(nombre_archivo, "rb");
     if (archivo == NULL) {
         printf("Error al abrir el archivo: %s\n", nombre_archivo);
-        free(resultados);
+        *cantidad_resultados = 0;
         return resultados;
     }
-    // calcular el tamano del archivo
-    fseek(archivo, 0, SEEK_END);
-    long tamano_archivo = ftell(archivo);
-    rewind(archivo);
-    int tamano_nodo = sizeof(Nodo);
-    int num_nodos = tamano_archivo / tamano_nodo;
-    int indice_actual = 0;
-    Nodo nodo_actual;
-    // leer la raiz y buscar
-    fseek(archivo, indice_actual * tamano_nodo, SEEK_SET);
-    fread(&nodo_actual, tamano_nodo, 1, archivo);
-    buscar_rango_recursivo(archivo, &nodo_actual, indice_actual, limite_inf, limite_sup, tamano_nodo, &resultados, &cantidad);
+    int tamaño_nodo = sizeof(Nodo);
+    buscar_rango_arbolB_recursivo(archivo, 0, limite_inf, limite_sup, tamaño_nodo, &resultados, &cantidad, &capacidad);
     fclose(archivo);
     *cantidad_resultados = cantidad;
     return resultados;
 }
 
-void buscar_rango_recursivo(FILE *archivo, Nodo *nodo, int indice_actual, int limite_inf, int limite_sup, int tamano_nodo, Pair** resultados, int* cantidad) {
-    if (nodo->es_interno == 0) {
-        // si es hoja, buscar los pares en el rango
-        for (int i = 0; i < nodo->k; i++) {
-            if (nodo->llaves_valores[i].llave >= limite_inf && nodo->llaves_valores[i].llave <= limite_sup) {
-                // printf("Llave: %d, Valor: %.2f\n", nodo->llaves_valores[i].llave, nodo->llaves_valores[i].valor);
-                (*resultados)[*cantidad] = nodo->llaves_valores[i];
+// funcion auxiliar para encontrar la primera hoja en arbol B+
+int encontrar_primera_hoja_BPlus(FILE *archivo, int indice_actual, int limite_inf, int tamaño_nodo) {
+    Nodo nodo_actual;
+    fseek(archivo, indice_actual * tamaño_nodo, SEEK_SET);
+    fread(&nodo_actual, tamaño_nodo, 1, archivo);
+    contar_lectura_busqueda();
+    
+    // si es hoja se retorna su indice
+    if (nodo_actual.es_interno == 0) {
+        return indice_actual;
+    }
+    // si es nodo interno hay que encontrar el hijo apropiado
+    int i = 0;
+    while (i < nodo_actual.k && limite_inf > nodo_actual.llaves_valores[i].llave) {
+        i++;
+    }
+    // recursivamente bajar al hijo apropiado
+    if (nodo_actual.hijos[i] != -1) {
+        return encontrar_primera_hoja_BPlus(archivo, nodo_actual.hijos[i], limite_inf, tamaño_nodo);
+    }
+    return -1;
+}
+
+// funcion auxiliar para recorrer las hojas del arbol B+ y recolectar resultados
+void recorrer_hojas_BPlus(FILE *archivo, int indice_hoja_inicial, int limite_inf, int limite_sup, int tamaño_nodo, Pair** resultados, int* cantidad, int* capacidad) {
+    int indice_hoja_actual = indice_hoja_inicial;
+    
+    // recorrer las hojas usando el puntero siguiente
+    while (indice_hoja_actual != -1) {
+        Nodo hoja_actual;
+        fseek(archivo, indice_hoja_actual * tamaño_nodo, SEEK_SET);
+        fread(&hoja_actual, tamaño_nodo, 1, archivo);
+        contar_lectura_busqueda();
+        
+        // revisar todos los pares de la hoja
+        for (int i = 0; i < hoja_actual.k; i++) {
+            int llave = hoja_actual.llaves_valores[i].llave;
+            
+            if (llave > limite_sup) { // si la llave es mayor al limite superior se detiene
+                return;
+            }    
+            // esta en el rango y se agrega
+            if (llave >= limite_inf && llave <= limite_sup) {
+                if (*cantidad >= *capacidad) {
+                    *capacidad *= 2;
+                    *resultados = realloc(*resultados, sizeof(Pair) * (*capacidad));
+                }
+                (*resultados)[*cantidad] = hoja_actual.llaves_valores[i];
                 (*cantidad)++;
-                if (*cantidad==1000) printf("Se alcanzo el limite de pares encontrados");
             }
         }
-        // para arbol B+, si hay siguiente hoja, continuar buscando
-        if (nodo->sgte != -1) {
-            Nodo siguiente;
-            fseek(archivo, nodo->sgte * tamano_nodo, SEEK_SET);
-            fread(&siguiente, tamano_nodo, 1, archivo);
-            buscar_rango_recursivo(archivo, &siguiente, nodo->sgte, limite_inf, limite_sup, tamano_nodo, resultados, cantidad);
+        
+        // si no hay siguiente hoja se termina
+        if (hoja_actual.sgte == -1) {
+            return;
         }
-    } else { // es nodo interno
-        int i = 0;
-        while (i < nodo->k && nodo->llaves_valores[i].llave < limite_inf) {
-            i++;
-        }
-        // buscar en el hijo correspondiente
-        Nodo hijo;
-        fseek(archivo, nodo->hijos[i] * tamano_nodo, SEEK_SET);
-        fread(&hijo, tamano_nodo, 1, archivo);
-        buscar_rango_recursivo(archivo, &hijo, nodo->hijos[i], limite_inf, limite_sup, tamano_nodo, resultados, cantidad);
-        // para el arbol B+, tambien buscar en hijos siguientes si las llaves estan en rango
-        i++;
-        while (i <= nodo->k && nodo->llaves_valores[i-1].llave <= limite_sup) {
-            Nodo hijo_sig;
-            fseek(archivo, nodo->hijos[i] * tamano_nodo, SEEK_SET);
-            fread(&hijo_sig, tamano_nodo, 1, archivo);
-            buscar_rango_recursivo(archivo, &hijo_sig, nodo->hijos[i], limite_inf, limite_sup, tamano_nodo, resultados, cantidad);
-            i++;
-        }
+        // avanzar a la siguiente hoja
+        indice_hoja_actual = hoja_actual.sgte;
     }
+}
+
+// funcion principal para buscar en arbol B+
+Pair* buscar_rango_arbolBPlus(const char *nombre_archivo, int limite_inf, int limite_sup, int* cantidad_resultados) {
+    int capacidad = 1000;
+    Pair* resultados = malloc(sizeof(Pair) * capacidad);
+    int cantidad = 0;
+    
+    FILE *archivo = fopen(nombre_archivo, "rb");
+    if (archivo == NULL) {
+        printf("Error al abrir el archivo: %s\n", nombre_archivo);
+        *cantidad_resultados = 0;
+        return resultados;
+    }
+    
+    int tamaño_nodo = sizeof(Nodo);
+    int indice_primera_hoja = encontrar_primera_hoja_BPlus(archivo, 0, limite_inf, tamaño_nodo);
+    if (indice_primera_hoja != -1) {
+        recorrer_hojas_BPlus(archivo, indice_primera_hoja, limite_inf, limite_sup, tamaño_nodo, &resultados, &cantidad, &capacidad);
+    }
+    fclose(archivo);
+    *cantidad_resultados = cantidad;
+    return resultados;
+}
+
+// funcion para buscar en un arbol B desde archivo
+Pair* buscar_en_arbolB(const char *nombre_archivo, int limite_inf, int limite_sup, int* cantidad_resultados) {
+    return buscar_rango_arbolB(nombre_archivo, limite_inf, limite_sup, cantidad_resultados);
+}
+
+// funcion para buscar en un arbol B+ desde archivo
+Pair* buscar_en_arbolBPlus(const char *nombre_archivo, int limite_inf, int limite_sup, int* cantidad_resultados) {
+    return buscar_rango_arbolBPlus(nombre_archivo, limite_inf, limite_sup, cantidad_resultados);
 }
