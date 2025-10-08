@@ -7,11 +7,13 @@
 #include "operaciones/crear_arbol.c"
 #include "operaciones/insertar.c"
 #include "operaciones/stats.c"
+#include "operaciones/procesar_pares.c"
 
 /* Experimento de insercion y busqueda en un arbol 
     @param N: Cantidad de pares para el experimento
+    @param i: Exponente N=2^i
 */
-void ejecutar_experimento(int N){
+void ejecutar_experimento(int N, int i){
     StatsIO stats_arbolB;
     StatsIO stats_arbolBPlus;
     iniciar_estadisticas(&stats_arbolB);
@@ -93,25 +95,20 @@ void ejecutar_experimento(int N){
     // Calcular porcentajes
     double porcentaje_promedio_B = ((double)total_resultados_B / (50.0 * N)) * 100.0;
     double porcentaje_promedio_BPlus = ((double)total_resultados_BPlus / (50.0 * N)) * 100.0;
+    // Calcular IOs
+    int ios_insercion_B = stats_arbolB.escrituras_insercion + stats_arbolB.lecturas_insercion;
+    int ios_insercion_BPlus = stats_arbolBPlus.escrituras_insercion + stats_arbolBPlus.lecturas_insercion;
+    int ios_busqueda_B = stats_arbolB.lecturas_busqueda;
+    int ios_busqueda_BPlus = stats_arbolBPlus.lecturas_busqueda;
 
     // Resultados
-    printf("\n-------- Resultados experimento --------\n", N);
-
-    printf("--- Arbol B ---\n");
-    printf("Tiempo de creacion: %.6f segundos\n", tiempo_creacion_B);
-    printf("I/Os durante insercion: %d\n", stats_arbolB.escrituras_insercion + stats_arbolB.lecturas_insercion);
-    printf("Tamano arbol: %d nodos\n", tamanoB);
-    printf("Tiempo promedio de busqueda: %.6f segundos\n", promedio_busqueda_B);
-    printf("Promedio I/Os de busqueda: %d\n", stats_arbolB.lecturas_busqueda);
-    printf("Porcentaje promedio de datos encontrados: %.2f%%\n", porcentaje_promedio_B);
-
-    printf("--- Arbol B+ ---\n");
-    printf("Tiempo de creacion: %.6f segundos\n", tiempo_creacion_BPlus);
-    printf("I/Os durante insercion: %d\n", stats_arbolBPlus.escrituras_insercion + stats_arbolBPlus.lecturas_insercion);
-    printf("Tamano arbol: %d nodos\n", tamanoBPlus);
-    printf("Tiempo promedio de busqueda: %.6f segundos\n", promedio_busqueda_BPlus);
-    printf("Promedio I/Os de busqueda: %d\n", stats_arbolBPlus.lecturas_busqueda);
-    printf("Porcentaje promedio de datos encontrados: %.2f%%\n", porcentaje_promedio_BPlus);
+    printf("Escribiendo resultados experimento");
+    agregar_resultados_a_txt(i, tiempo_creacion_B, ios_insercion_B, tamanoB,
+                           promedio_busqueda_B, ios_busqueda_B, 
+                           porcentaje_promedio_B, "../resultados/resultados_arbolB.txt");
+    agregar_resultados_a_txt(i, tiempo_creacion_BPlus, ios_insercion_BPlus, tamanoBPlus,
+                           promedio_busqueda_BPlus, ios_busqueda_BPlus, 
+                           porcentaje_promedio_BPlus, "../resultados/resultados_arbolBPlus.txt");
 
     liberar_arbol(arbolB, tamanoB);
     liberar_arbol(arbolBPlus, tamanoBPlus);
@@ -145,9 +142,7 @@ void ejecutar_experimento2(){
         insertar_en_arbolB(&arbolB1, &tamanoB1, &raizB1, pair1.llave, pair1.valor, &stats_arbolB1);
         pares_insertados1++;
     }
-    fclose(archivo);
     // Insertar con N2
-    FILE* archivo = fopen("../datos_bin/datos.bin", "rb");
     int pares_insertados2=0;
     Pair pair2;
     while(pares_insertados2 < N2 && fread(&pair2, sizeof(Pair), 1, archivo) == 1){
@@ -175,14 +170,10 @@ void ejecutar_experimento2(){
     int cantidad_B2=0;
     Pair* resultados_B2 = buscar_en_arbolB("../datos_bin/arbolB_N20.bin", l, u, &cantidad_B2, &stats_arbolB2);
     // Imprimir resultados
-    printf("\n-------- Resultados para N=2^15 --------\n");
-    for (int i = 0; i < cantidad_B1; i++) {
-        printf("%d\t%.4f\n", resultados_B1[i].llave, resultados_B1[i].valor);
-    }
-    printf("\n-------- Resultados para N=2^20 --------\n");
-    for (int i = 0; i < cantidad_B2; i++) {
-        printf("%d\t%.4f\n", resultados_B2[i].llave, resultados_B2[i].valor);
-    }
+    printf("Escribiendo resultados en archivo de texto\n");
+    escribir_pares_a_txt(resultados_B1, cantidad_B1, "../resultados/busqueda_N15.txt");
+    escribir_pares_a_txt(resultados_B2, cantidad_B2, "../resultados/busqueda_N20.txt");
+
     liberar_arbol(arbolB1, tamanoB1);
     liberar_arbol(arbolB2, tamanoB2);
 }
@@ -190,11 +181,11 @@ void ejecutar_experimento2(){
 // Funcion principal para ejecutar experimentos
 void main(){
     printf("\n-------- INICIO EXPERIMENTOS --------\n");
-    for(int i=15; i<20; i++){       
+    for(int i=15; i<25; i++){       
         int N = pow(2, i);
         printf("\n-------- EJECUTANDO EXPERIMENTO N = 2^%d --------\n", i);
-        ejecutar_experimento(N);
-    }
+        ejecutar_experimento(N, i);
+    } 
     printf("\n-------- EJECUTANDO EXPERIMENTO BUSQUEDA PARA N=2^15 Y N=2^20 --------\n");
     ejecutar_experimento2();
     printf("\n-------- FIN EXPERIMENTOS --------\n");

@@ -185,11 +185,9 @@ void insertar_raiz_arbolB(Nodo ***arbol, int *tamano_arbol, int *raiz, int llave
     int indice_raiz = *raiz;
     contar_lectura_insercion(stats); // lectura
     if (!nodo_lleno(&(*arbol)[indice_raiz][0])) {
-        printf("Nodo no esta lleno\n");
         insertar_arbolB(*arbol, tamano_arbol, indice_raiz, llave, valor, stats);
     } else {
         // split de la raiz
-        printf("Nodo esta lleno\n");
         SplitArbol split_result = split_arbolB((*arbol)[indice_raiz][0]);
         int nuevo_indice_izq = (*tamano_arbol)++;
         (*arbol)[nuevo_indice_izq] = malloc(sizeof(Nodo));
