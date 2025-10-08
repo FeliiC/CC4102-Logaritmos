@@ -2,7 +2,11 @@
 #include <stdlib.h>
 
 
-// Inicializar nodo 
+/* Inicializar nodo
+    @param es_interno: Indica si es un nodo interno o una hoja
+
+    @return Nodo inicializado con valores 0
+*/
 Nodo* inicializar_nodo(int es_interno){
     Nodo* n = malloc(sizeof(Nodo));     
     n->es_interno = es_interno; 
@@ -18,7 +22,11 @@ Nodo* inicializar_nodo(int es_interno){
     return n;
 }
 
-// Inicializar un árbol 
+/* Inicializar arbol
+    @param tamano_arbol: Tamaño del arbol para pedir memoria
+
+    @return Arreglo de nodos con nodo raiz inicializado
+*/ 
 Nodo** inicializar_arbol(int tamano_arbol){
     Nodo **arbol = malloc(sizeof(Nodo*) * 500000);
     for (int i = 0; i < 1000; i++) {
@@ -29,7 +37,10 @@ Nodo** inicializar_arbol(int tamano_arbol){
     return arbol;
 }
 
-// Liberar memoria del árbol
+/* Libera la memoria de un arbol
+    @param arbol: Arreglo de nodos a liberar
+    @param tamano_arbol: Tamaño del arbol para pedir memoria
+*/
 void liberar_arbol(Nodo **arbol, int tamano_arbol) {
     for (int i = 0; i < tamano_arbol; i++) {
         free(arbol[i]);
@@ -38,7 +49,11 @@ void liberar_arbol(Nodo **arbol, int tamano_arbol) {
 }
 
 
-// Escribir un arbol a disco
+/* Escribir un arbol a disco
+    @param arbol: Arreglo de nodos a escribir
+    @param tamano_arbol: Tamaño del arbol para pedir memoria
+    @param nombre_archivo: Archivo donde escribir arbol
+*/
 void escribir_a_disco(Nodo **arbol, int tamano_arbol, const char* nombre_archivo){
     FILE* archivo = fopen(nombre_archivo, "wb");
     if (archivo == NULL) {

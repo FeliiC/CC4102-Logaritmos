@@ -6,12 +6,20 @@
 void contar_escritura_insercion(StatsIO* stats_global);
 void contar_lectura_insercion(StatsIO* stats_global);
 
-// función para verificar si un nodo esta lleno
+/* Funcion para verificar si un nodo esta lleno
+    @param nodo: Nodo que verificar
+
+    @return 1 si el nodo esta lleno, 0 si no
+*/
 int nodo_lleno(Nodo *nodo) {
     return (nodo->k >= B);
 }
 
-// funcion para insertar un par llave-valor en un arreglo ordenado
+/* Funcion para insertar un par llave-valor en un arreglo ordenado
+    @param nodo: Nodo donde insertar par
+    @param llave: Llave del par a insertar
+    @param valor: Valor del par a insertar
+*/ 
 void insertar_ordenado(Nodo *nodo, int llave, float valor) {
     if (nodo->k >= B) {
         printf("Error: Nodo lleno, no se puede insertar.\n");
@@ -27,7 +35,13 @@ void insertar_ordenado(Nodo *nodo, int llave, float valor) {
     nodo->k++;
 }
 
-// funcion para encontrar el hijo apropiado en un nodo interno
+
+/* Funcion para encontrar el hijo apropiado en un nodo interno
+    @param nodo: Nodo donde buscar 
+    @param llave: Valor de la llave 
+
+    @return Indice donde esta el hijo encontrado
+*/
 int encontrar_hijo(Nodo *nodo, int llave) {
     int i = 0;
     while (i < nodo->k && llave > nodo->llaves_valores[i].llave) {
@@ -36,7 +50,14 @@ int encontrar_hijo(Nodo *nodo, int llave) {
     return i;
 }
 
-// funcion para insertar en un arbol B
+/* Funcion para insertar en un arbol B
+    @param arbol: Arbol B donde insertar par
+    @param tamano_Arbol: Tamaño del arbol B
+    @param indice_nodo: Indice del nodo 
+    @param llave: Llave del par a insertar
+    @param valor: Valor del par a insertar
+    @param stats: Contador de lecturas/escrituras en disco 
+*/
 void insertar_arbolB(Nodo **arbol, int *tamano_arbol, int indice_nodo, int llave, float valor, StatsIO* stats) {
     
     contar_lectura_insercion(stats); // lectura
@@ -84,7 +105,14 @@ void insertar_arbolB(Nodo **arbol, int *tamano_arbol, int indice_nodo, int llave
     }
 }
 
-// funcion para insertar en un arbol B+
+/* Funcion para insertar en un arbol B+
+    @param arbol: Arbol B+ donde insertar par
+    @param tamano_Arbol: Tamaño del arbol B+
+    @param indice_nodo: Indice del nodo 
+    @param llave: Llave del par a insertar
+    @param valor: Valor del par a insertar
+    @param stats: Contador de lecturas/escrituras en disco 
+*/
 void insertar_arbolBPlus(Nodo **arbol, int *tamano_arbol, int indice_nodo, int llave, float valor, StatsIO* stats) {
     contar_lectura_insercion(stats);
     Nodo *nodo_actual = &arbol[indice_nodo][0];
@@ -145,7 +173,14 @@ void insertar_arbolBPlus(Nodo **arbol, int *tamano_arbol, int indice_nodo, int l
     }
 }
 
-// función para insertar un par en la raiz de un arbol B
+/* Funcion para insertar un par en la raiz de un arbol B
+    @param arbol: Arbol B donde insertar par
+    @param tamano_Arbol: Tamaño del arbol B
+    @param raiz: Indice de la raiz 
+    @param llave: Llave del par a insertar
+    @param valor: Valor del par a insertar
+    @param stats: Contador de lecturas/escrituras en disco 
+*/
 void insertar_raiz_arbolB(Nodo ***arbol, int *tamano_arbol, int *raiz, int llave, float valor, StatsIO* stats) {
     int indice_raiz = *raiz;
     contar_lectura_insercion(stats); // lectura
@@ -191,7 +226,14 @@ void insertar_raiz_arbolB(Nodo ***arbol, int *tamano_arbol, int *raiz, int llave
     }
 }
 
-// funcion para insertar un par en la raiz de un arbol B+
+/* Funcion para insertar un par en la raiz de un arbol B+
+    @param arbol: Arbol B+ donde insertar par
+    @param tamano_Arbol: Tamaño del arbol B+
+    @param raiz: Indice de la raiz 
+    @param llave: Llave del par a insertar
+    @param valor: Valor del par a insertar
+    @param stats: Contador de lecturas/escrituras en disco 
+*/
 void insertar_raiz_arbolBPlus(Nodo ***arbol, int *tamano_arbol, int *raiz, int llave, float valor, StatsIO* stats) {
     int indice_raiz = *raiz;
     
@@ -255,11 +297,26 @@ void insertar_raiz_arbolBPlus(Nodo ***arbol, int *tamano_arbol, int *raiz, int l
     }
 }
 
-// funcion principal para insertar en árbol B
+/* Funcion principal para insertar en árbol B
+    @param arbol: Arbol B donde insertar par
+    @param tamano_Arbol: Tamaño del arbol B
+    @param raiz: Indice de la raiz 
+    @param llave: Llave del par a insertar
+    @param valor: Valor del par a insertar
+    @param stats: Contador de lecturas/escrituras en disco 
+*/
 void insertar_en_arbolB(Nodo ***arbol, int *tamano_arbol, int *raiz, int llave, float valor, StatsIO* stats) {
     insertar_raiz_arbolB(arbol, tamano_arbol, raiz, llave, valor, stats);
 }
-// funcion principal para insertar en árbol B+
+
+/* Funcion principal para insertar en árbol B+
+    @param arbol: Arbol B+ donde insertar par
+    @param tamano_Arbol: Tamaño del arbol B+
+    @param raiz: Indice de la raiz 
+    @param llave: Llave del par a insertar
+    @param valor: Valor del par a insertar
+    @param stats: Contador de lecturas/escrituras en disco 
+*/
 void insertar_en_arbolBPlus(Nodo ***arbol, int *tamano_arbol, int *raiz, int llave, float valor, StatsIO* stats) {
     insertar_raiz_arbolBPlus(arbol, tamano_arbol, raiz, llave, valor, stats);
 }

@@ -8,8 +8,9 @@
 #include "operaciones/insertar.c"
 #include "operaciones/stats.c"
 
-#define M 1000     // tamano inicial del arreglo de nodos
-
+/* Experimento de insercion y busqueda en un arbol 
+    @param N: Cantidad de pares para el experimento
+*/
 void ejecutar_experimento(int N){
     StatsIO stats_arbolB;
     StatsIO stats_arbolBPlus;
@@ -69,7 +70,7 @@ void ejecutar_experimento(int N){
     int total_resultados_BPlus=0;
     srand(time(NULL));          // semilla para números aleatorios
     for (int i = 0; i<50; i++) {
-        int l = llave_min + rand() % (llave_max - llave_min + 1);   // ver si esta en el rango esperado
+        int l = llave_min + rand() % (llave_max - llave_min + 1);   
         int u = l + 604800;
 
         // Árbol B
@@ -116,6 +117,77 @@ void ejecutar_experimento(int N){
     liberar_arbol(arbolBPlus, tamanoBPlus);
 }
 
+// Experimento de resultados de una busqueda por rango
+void ejecutar_experimento2(){
+    int N1 = pow(2, 15);
+    int N2 = pow(2, 20);
+    // Inicializar arboles B
+    StatsIO stats_arbolB1;
+    StatsIO stats_arbolB2;
+    iniciar_estadisticas(&stats_arbolB1);
+    iniciar_estadisticas(&stats_arbolB2);
+    int tamanoB1 = 1, tamanoB2 = 1;
+    int raizB1 = 0, raizB2 = 0;
+    Nodo **arbolB1 = inicializar_arbol(tamanoB1);
+    Nodo **arbolB2 = inicializar_arbol(tamanoB2);
+    printf("Insertando en arbol\n");
+    // Insertar con N1
+    FILE* archivo = fopen("../datos_bin/datos.bin", "rb");
+    if (archivo == NULL) {
+        printf("Error al abrir el archivo: datos.bin\n");
+        liberar_arbol(arbolB1, tamanoB1);
+        liberar_arbol(arbolB2, tamanoB2);
+        return;
+    }
+    int pares_insertados1=0;
+    Pair pair1;
+    while(pares_insertados1 < N1 && fread(&pair1, sizeof(Pair), 1, archivo) == 1){
+        insertar_en_arbolB(&arbolB1, &tamanoB1, &raizB1, pair1.llave, pair1.valor, &stats_arbolB1);
+        pares_insertados1++;
+    }
+    fclose(archivo);
+    // Insertar con N2
+    FILE* archivo = fopen("../datos_bin/datos.bin", "rb");
+    int pares_insertados2=0;
+    Pair pair2;
+    while(pares_insertados2 < N2 && fread(&pair2, sizeof(Pair), 1, archivo) == 1){
+        insertar_en_arbolB(&arbolB2, &tamanoB2, &raizB2, pair2.llave, pair2.valor, &stats_arbolB2);
+        pares_insertados2++;
+    }
+    fclose(archivo);
+    // Escribir a disco
+    printf("Escribiendo en disco\n");
+    printf("-> escribir arbolB con N=2^15\n");
+    escribir_a_disco(arbolB1, tamanoB1, "../datos_bin/arbolB_N15.bin");
+    printf("-> escribir arbolB con N=2^20\n");
+    escribir_a_disco(arbolB2, tamanoB2, "../datos_bin/arbolB_N20.bin");
+    // Realizando busqueda
+    printf("Realizando busqueda\n");
+    int llave_min = 1546300800;
+    int llave_max = 1754006400;
+    srand(time(NULL));
+    int l = llave_min + rand() % (llave_max - llave_min + 1);  
+    int u = l + 604800;
+    // Busqueda en N1
+    int cantidad_B1=0;
+    Pair* resultados_B1 = buscar_en_arbolB("../datos_bin/arbolB_N15.bin", l, u, &cantidad_B1, &stats_arbolB1);
+    // Busqueda en N2
+    int cantidad_B2=0;
+    Pair* resultados_B2 = buscar_en_arbolB("../datos_bin/arbolB_N20.bin", l, u, &cantidad_B2, &stats_arbolB2);
+    // Imprimir resultados
+    printf("\n-------- Resultados para N=2^15 --------\n");
+    for (int i = 0; i < cantidad_B1; i++) {
+        printf("%d\t%.4f\n", resultados_B1[i].llave, resultados_B1[i].valor);
+    }
+    printf("\n-------- Resultados para N=2^20 --------\n");
+    for (int i = 0; i < cantidad_B2; i++) {
+        printf("%d\t%.4f\n", resultados_B2[i].llave, resultados_B2[i].valor);
+    }
+    liberar_arbol(arbolB1, tamanoB1);
+    liberar_arbol(arbolB2, tamanoB2);
+}
+
+// Funcion principal para ejecutar experimentos
 void main(){
     printf("\n-------- INICIO EXPERIMENTOS --------\n");
     for(int i=15; i<20; i++){       
@@ -123,6 +195,8 @@ void main(){
         printf("\n-------- EJECUTANDO EXPERIMENTO N = 2^%d --------\n", i);
         ejecutar_experimento(N);
     }
+    printf("\n-------- EJECUTANDO EXPERIMENTO BUSQUEDA PARA N=2^15 Y N=2^20 --------\n");
+    ejecutar_experimento2();
     printf("\n-------- FIN EXPERIMENTOS --------\n");
 }
 

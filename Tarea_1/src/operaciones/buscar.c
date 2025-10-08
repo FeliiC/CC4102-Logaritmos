@@ -4,7 +4,17 @@
 
 void contar_lectura_busqueda(StatsIO* stats_global);
 
-// funcion auxiliar para buscar en arbol B recursiva
+/* Funcion auxiliar para buscar en arbol B recursiva
+    @param archivo: Arbol B en archivo binario
+    @param indice_actual: Indice actual al buscar
+    @param limite_inf: Rango inferior de busqueda
+    @param limite_sup: Rango superior de busqueda
+    @param tamano_nodo: Tamaño del nodo actual
+    @param resultado: Par llave-valor encontrada
+    @param cantidad: Cantidad de resultados encontrados
+    @param capacidad: Maxima capacidad de resultados
+    @param stats: Contador de lecturas en disco 
+*/
 void buscar_rango_arbolB_recursivo(FILE *archivo, int indice_actual, int limite_inf, int limite_sup, int tamano_nodo, Pair** resultados, int* cantidad, int* capacidad, StatsIO* stats) {
     Nodo nodo_actual;
     fseek(archivo, indice_actual * tamano_nodo, SEEK_SET);
@@ -64,7 +74,15 @@ void buscar_rango_arbolB_recursivo(FILE *archivo, int indice_actual, int limite_
     }
 }
 
-// funcion principal para buscar en arbol B
+/* Funcion principal para buscar en arbol B
+    @param archivo: Arbol B en archivo binario
+    @param limite_inf: Rango inferior de busqueda
+    @param limite_sup: Rango superior de busqueda
+    @param cantidad_resultados: Cantidad de resultados encontrados
+    @param stats: Contador de lecturas en disco 
+
+    @return Arreglo de pares llave-valor encontrados
+*/
 Pair* buscar_rango_arbolB(const char *nombre_archivo, int limite_inf, int limite_sup, int* cantidad_resultados, StatsIO* stats) {
     int capacidad = 1000;
     Pair* resultados = malloc(sizeof(Pair) * capacidad);
@@ -82,7 +100,15 @@ Pair* buscar_rango_arbolB(const char *nombre_archivo, int limite_inf, int limite
     return resultados;
 }
 
-// funcion auxiliar para encontrar la primera hoja en arbol B+
+/* Funcion auxiliar para encontrar la primera hoja en arbol B+
+    @param archivo: Arbol B+ en archivo binario
+    @param indice_actual: Indice actual al buscar
+    @param limite_inf: Rango inferior de busqueda
+    @param tamano_nodo: Tamaño del nodo actual
+    @param stats: Contador de lecturas en disco
+    
+    @return Indice de la primera hoja
+*/
 int encontrar_primera_hoja_BPlus(FILE *archivo, int indice_actual, int limite_inf, int tamano_nodo, StatsIO* stats) {
     Nodo nodo_actual;
     fseek(archivo, indice_actual * tamano_nodo, SEEK_SET);
@@ -105,7 +131,17 @@ int encontrar_primera_hoja_BPlus(FILE *archivo, int indice_actual, int limite_in
     return -1;
 }
 
-// funcion auxiliar para recorrer las hojas del arbol B+ y recolectar resultados
+/* Funcion auxiliar para recorrer las hojas del arbol B+ y recolectar resultados
+    @param archivo: Arbol B+ en archivo binario
+    @param indice_hoja_inicial: Indice de la hoja inicial 
+    @param limite_inf: Rango inferior de busqueda
+    @param limite_sup: Rango superior de busqueda
+    @param tamano_nodo: Tamaño del nodo actual
+    @param resultado: Pares llave-valor encontrados
+    @param cantidad: Cantidad de resultados encontrados
+    @param capacidad: Maxima capacidad de resultados
+    @param stats: Contador de lecturas en disco 
+*/
 void recorrer_hojas_BPlus(FILE *archivo, int indice_hoja_inicial, int limite_inf, int limite_sup, int tamano_nodo, Pair** resultados, int* cantidad, int* capacidad, StatsIO* stats) {
     int indice_hoja_actual = indice_hoja_inicial;
     
@@ -143,7 +179,15 @@ void recorrer_hojas_BPlus(FILE *archivo, int indice_hoja_inicial, int limite_inf
     };
 }
 
-// funcion principal para buscar en arbol B+
+/* Funcion principal para buscar en arbol B+
+    @param archivo: Arbol B+ en archivo binario
+    @param limite_inf: Rango inferior de busqueda
+    @param limite_sup: Rango superior de busqueda
+    @param cantidad_resultados: Cantidad de resultados encontrados
+    @param stats: Contador de lecturas en disco 
+
+    @return Arreglo de pares llave-valor encontrados
+*/
 Pair* buscar_rango_arbolBPlus(const char *nombre_archivo, int limite_inf, int limite_sup, int* cantidad_resultados, StatsIO* stats) {
     int capacidad = 1000;
     Pair* resultados = malloc(sizeof(Pair) * capacidad);
@@ -166,12 +210,28 @@ Pair* buscar_rango_arbolBPlus(const char *nombre_archivo, int limite_inf, int li
     return resultados;
 }
 
-// funcion para buscar en un arbol B desde archivo
+/* Funcion para buscar en arbol B desde archivo
+    @param archivo: Arbol B en archivo binario
+    @param limite_inf: Rango inferior de busqueda
+    @param limite_sup: Rango superior de busqueda
+    @param cantidad_resultados: Cantidad de resultados encontrados
+    @param stats: Contador de lecturas en disco 
+
+    @return Arreglo de pares llave-valor encontrados
+*/
 Pair* buscar_en_arbolB(const char *nombre_archivo, int limite_inf, int limite_sup, int* cantidad_resultados, StatsIO* stats) {
     return buscar_rango_arbolB(nombre_archivo, limite_inf, limite_sup, cantidad_resultados, stats);
 }
 
-// funcion para buscar en un arbol B+ desde archivo
+/* Funcion para buscar en arbol B+ desde archivo
+    @param archivo: Arbol B+ en archivo binario
+    @param limite_inf: Rango inferior de busqueda
+    @param limite_sup: Rango superior de busqueda
+    @param cantidad_resultados: Cantidad de resultados encontrados
+    @param stats: Contador de lecturas en disco 
+
+    @return Arreglo de pares llave-valor encontrados
+*/
 Pair* buscar_en_arbolBPlus(const char *nombre_archivo, int limite_inf, int limite_sup, int* cantidad_resultados, StatsIO* stats) {
     return buscar_rango_arbolBPlus(nombre_archivo, limite_inf, limite_sup, cantidad_resultados, stats);
 }
