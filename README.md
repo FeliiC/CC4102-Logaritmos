@@ -40,6 +40,11 @@ CC4102-LOGARITMOS/                          # Carpeta principal
 │   │   ├── arbolBPlus.bin                  # Arbol B+ en disco
 │   │   ├── datos.bin                       # Pares llave-valor
 │   │   └── datos_sample.txt                # Ejemplo de pares llave-valor
+│   ├── resultados/                         # Resultados del experimento
+│   │   ├── busqueda_N15.txt                # Busqueda de rango para 2^15
+│   │   ├── busqueda_N20.txt                # Busqueda de rango para 2^20
+│   │   ├── resultados_arbolB.txt           # Estadisticas experimento arbol B
+│   │   └── resultados_arbolBPlus.txt       # Estadisticas experimento arbol B+
 │   ├── src/                                # Archivos principales
 │   │    ├──estructuras/                    # Estructuras del proyecto
 │   │    │  └── nodo.c                      # Estructura de par y nodo
@@ -47,7 +52,7 @@ CC4102-LOGARITMOS/                          # Carpeta principal
 │   │       ├── buscar.c                    # Busqueda en arbol
 │   │       ├── crear_arbol.c               # Inicializacion arbol
 │   │       ├── insertar.c                  # Insertar en arbol
-│   │       ├── leer_pares.c                # Leer pares desde .bin
+│   │       ├── procesar_pares.c            # Procesar pares (leer/escribir)
 │   │       ├── split.c                     # Split de un nodo
 │   │       └── stats.c                     # Calculo de IOs de operaciones
 │   └── experimento.c                       # Experimento
