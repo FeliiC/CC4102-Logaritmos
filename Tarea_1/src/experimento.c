@@ -19,7 +19,7 @@ void ejecutar_experimento(int N){
     // Crear árboles
     int tamanoB = 1;
     int tamanoBPlus = 1;
-    int raizB, raizBPlus = 0;
+    int raizB = 0, raizBPlus = 0;
     Nodo **arbolB = inicializar_arbol(tamanoB);
     Nodo **arbolBPlus = inicializar_arbol(tamanoBPlus);
 
@@ -118,7 +118,7 @@ void ejecutar_experimento(int N){
 
 void main(){
     printf("\n-------- INICIO EXPERIMENTOS --------\n");
-    for(int i=15; i<16; i++){       
+    for(int i=15; i<20; i++){       
         int N = pow(2, i);
         printf("\n-------- EJECUTANDO EXPERIMENTO N = 2^%d --------\n", i);
         ejecutar_experimento(N);

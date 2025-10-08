@@ -8,12 +8,12 @@ void contar_lectura_insercion(StatsIO* stats_global);
 
 // función para verificar si un nodo esta lleno
 int nodo_lleno(Nodo *nodo) {
-    return (nodo->k == 340);
+    return (nodo->k >= B);
 }
 
 // funcion para insertar un par llave-valor en un arreglo ordenado
 void insertar_ordenado(Nodo *nodo, int llave, float valor) {
-    if (nodo->k >= 340) {
+    if (nodo->k >= B) {
         printf("Error: Nodo lleno, no se puede insertar.\n");
         return;
     }
@@ -195,7 +195,7 @@ void insertar_raiz_arbolB(Nodo ***arbol, int *tamano_arbol, int *raiz, int llave
 void insertar_raiz_arbolBPlus(Nodo ***arbol, int *tamano_arbol, int *raiz, int llave, float valor, StatsIO* stats) {
     int indice_raiz = *raiz;
     
-    // LECTURA: Acceso a la raíz
+    // lectura de acceso a la raiz
     contar_lectura_insercion(stats);
     
     if (!nodo_lleno(&(*arbol)[indice_raiz][0])) {
