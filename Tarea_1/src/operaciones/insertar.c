@@ -2,16 +2,18 @@
 #include <stdlib.h>
 #include <string.h>
 #include "split.c"
-#include "../estructuras/estadisticas.h"
+
+void contar_escritura_insercion(StatsIO* stats_global);
+void contar_lectura_insercion(StatsIO* stats_global);
 
 // función para verificar si un nodo esta lleno
 int nodo_lleno(Nodo *nodo) {
-    return (nodo->k == B);
+    return (nodo->k == 340);
 }
 
 // funcion para insertar un par llave-valor en un arreglo ordenado
 void insertar_ordenado(Nodo *nodo, int llave, float valor) {
-    if (nodo->k >= B) {
+    if (nodo->k >= 340) {
         printf("Error: Nodo lleno, no se puede insertar.\n");
         return;
     }
@@ -35,31 +37,31 @@ int encontrar_hijo(Nodo *nodo, int llave) {
 }
 
 // funcion para insertar en un arbol B
-void insertar_arbolB(Nodo **arbol, int *tamaño_arbol, int indice_nodo, int llave, float valor) {
+void insertar_arbolB(Nodo **arbol, int *tamano_arbol, int indice_nodo, int llave, float valor, StatsIO* stats) {
     
-    contar_lectura_insercion(); // lectura
+    contar_lectura_insercion(stats); // lectura
     Nodo *nodo_actual = &arbol[indice_nodo][0];
     
     // si es una hoja
     if (nodo_actual->es_interno == 0) {
         insertar_ordenado(nodo_actual, llave, valor);
         arbol[indice_nodo][0] = *nodo_actual;
-        contar_escritura_insercion(); //escritura
+        contar_escritura_insercion(stats); //escritura
         return;
     } 
     // es nodo interno
     int hijo_idx = encontrar_hijo(nodo_actual, llave);
     int indice_hijo = nodo_actual->hijos[hijo_idx];
-    contar_lectura_insercion(); // lectura
+    contar_lectura_insercion(stats); // lectura
     if (nodo_lleno(&arbol[indice_hijo][0])) {
         // split del hijo
         SplitArbol split_result = split_arbolB(arbol[indice_hijo][0]);
-        int nuevo_indice_der = (*tamaño_arbol)++;
+        int nuevo_indice_der = (*tamano_arbol)++;
         arbol[nuevo_indice_der] = malloc(sizeof(Nodo));
         *(arbol[nuevo_indice_der]) = split_result.nodo_der;
-        contar_escritura_insercion(); // escritura
+        contar_escritura_insercion(stats); // escritura
         *(arbol[indice_hijo]) = split_result.nodo_izq;
-        contar_escritura_insercion(); 
+        contar_escritura_insercion(stats); 
         // reorganizar hijos en nodo actual
         for (int i = nodo_actual->k; i > hijo_idx; i--) {
             nodo_actual->hijos[i + 1] = nodo_actual->hijos[i];
@@ -68,35 +70,35 @@ void insertar_arbolB(Nodo **arbol, int *tamaño_arbol, int indice_nodo, int llav
         // insertar par mediano en nodo actual
         insertar_ordenado(nodo_actual, split_result.par_mediano.llave, split_result.par_mediano.valor);
         arbol[indice_nodo][0] = *nodo_actual;
-        contar_escritura_insercion();
+        contar_escritura_insercion(stats);
         
         // insertar recursivamente en el hijo que corresponda
         if (llave <= split_result.par_mediano.llave) {
-            insertar_arbolB(arbol, tamaño_arbol, indice_hijo, llave, valor);
+            insertar_arbolB(arbol, tamano_arbol, indice_hijo, llave, valor, stats);
         } else {
-            insertar_arbolB(arbol, tamaño_arbol, nuevo_indice_der, llave, valor);
+            insertar_arbolB(arbol, tamano_arbol, nuevo_indice_der, llave, valor, stats);
         }
     } else {
         // el hijo no esta lleno, insertar recursivamente
-        insertar_arbolB(arbol, tamaño_arbol, indice_hijo, llave, valor);
+        insertar_arbolB(arbol, tamano_arbol, indice_hijo, llave, valor, stats);
     }
 }
 
 // funcion para insertar en un arbol B+
-void insertar_arbolBPlus(Nodo **arbol, int *tamaño_arbol, int indice_nodo, int llave, float valor) {
-    contar_lectura_insercion();
+void insertar_arbolBPlus(Nodo **arbol, int *tamano_arbol, int indice_nodo, int llave, float valor, StatsIO* stats) {
+    contar_lectura_insercion(stats);
     Nodo *nodo_actual = &arbol[indice_nodo][0];
     if (nodo_actual->es_interno == 0) { // es hoja entonces inserta directamente
         insertar_ordenado(nodo_actual, llave, valor);
         arbol[indice_nodo][0] = *nodo_actual;
-        contar_escritura_insercion();
+        contar_escritura_insercion(stats);
         return;
     } 
 
     // es nodo interno
     int hijo_idx = encontrar_hijo(nodo_actual, llave);
     int indice_hijo = nodo_actual->hijos[hijo_idx];
-    contar_lectura_insercion();
+    contar_lectura_insercion(stats);
     if (nodo_lleno(&arbol[indice_hijo][0])) {
         // split del hijo
         SplitArbol split_result;
@@ -106,20 +108,20 @@ void insertar_arbolBPlus(Nodo **arbol, int *tamaño_arbol, int indice_nodo, int 
         } else {
             split_result = split_arbolB(arbol[indice_hijo][0]);
         }
-        int nuevo_indice_der = (*tamaño_arbol)++;
+        int nuevo_indice_der = (*tamano_arbol)++;
         arbol[nuevo_indice_der] = malloc(sizeof(Nodo));
         *(arbol[nuevo_indice_der]) = split_result.nodo_der;
-        contar_escritura_insercion();
+        contar_escritura_insercion(stats);
         // arbol B+, si el hijo era hoja se actualiza el puntero siguiente
         if (es_hijo_hoja) {
             split_result.nodo_izq.sgte = nuevo_indice_der;
             split_result.nodo_der.sgte = arbol[indice_hijo][0].sgte;
             // actualizar el nodo derecho
             *(arbol[nuevo_indice_der]) = split_result.nodo_der;
-            contar_escritura_insercion();
+            contar_escritura_insercion(stats);
         }
         *(arbol[indice_hijo]) = split_result.nodo_izq;
-        contar_escritura_insercion();
+        contar_escritura_insercion(stats);
 
         // reorganizar hijos en nodo actual
         for (int i = nodo_actual->k; i > hijo_idx; i--) {
@@ -130,38 +132,39 @@ void insertar_arbolBPlus(Nodo **arbol, int *tamaño_arbol, int indice_nodo, int 
         // insertar par mediano en nodo actual
         insertar_ordenado(nodo_actual, split_result.par_mediano.llave, split_result.par_mediano.valor);
         arbol[indice_nodo][0] = *nodo_actual;
-        contar_escritura_insercion();
+        contar_escritura_insercion(stats);
         
         // insertar recursivamente en el hijo apropiado
         if (llave <= split_result.par_mediano.llave) {
-            insertar_arbolBPlus(arbol, tamaño_arbol, indice_hijo, llave, valor);
+            insertar_arbolBPlus(arbol, tamano_arbol, indice_hijo, llave, valor, stats);
         } else {
-            insertar_arbolBPlus(arbol, tamaño_arbol, nuevo_indice_der, llave, valor);
+            insertar_arbolBPlus(arbol, tamano_arbol, nuevo_indice_der, llave, valor, stats);
         }
     } else {
-        insertar_arbolBPlus(arbol, tamaño_arbol, indice_hijo, llave, valor);
+        insertar_arbolBPlus(arbol, tamano_arbol, indice_hijo, llave, valor, stats);
     }
 }
 
 // función para insertar un par en la raiz de un arbol B
-void insertar_raiz_arbolB(Nodo ***arbol, int *tamaño_arbol, int *raiz, int llave, float valor) {
+void insertar_raiz_arbolB(Nodo ***arbol, int *tamano_arbol, int *raiz, int llave, float valor, StatsIO* stats) {
     int indice_raiz = *raiz;
-    contar_lectura_insercion(); // lectura
+    contar_lectura_insercion(stats); // lectura
     if (!nodo_lleno(&(*arbol)[indice_raiz][0])) {
-        insertar_arbolB(*arbol, tamaño_arbol, indice_raiz, llave, valor);
+        printf("Nodo no esta lleno\n");
+        insertar_arbolB(*arbol, tamano_arbol, indice_raiz, llave, valor, stats);
     } else {
         // split de la raiz
+        printf("Nodo esta lleno\n");
         SplitArbol split_result = split_arbolB((*arbol)[indice_raiz][0]);
-        int nuevo_indice_izq = (*tamaño_arbol)++;
+        int nuevo_indice_izq = (*tamano_arbol)++;
         (*arbol)[nuevo_indice_izq] = malloc(sizeof(Nodo));
         *((*arbol)[nuevo_indice_izq]) = split_result.nodo_izq;
-        contar_escritura_insercion(); // escritura
+        contar_escritura_insercion(stats); // escritura
         
-        int nuevo_indice_der = (*tamaño_arbol)++;
+        int nuevo_indice_der = (*tamano_arbol)++;
         (*arbol)[nuevo_indice_der] = malloc(sizeof(Nodo));
         *((*arbol)[nuevo_indice_der]) = split_result.nodo_der;
-        contar_escritura_insercion(); // escritura
-        
+        contar_escritura_insercion(stats); // escritura
         // crear nueva raíz
         Nodo *nueva_raiz_nodo = malloc(sizeof(Nodo));
         nueva_raiz_nodo->es_interno = 1;
@@ -176,28 +179,27 @@ void insertar_raiz_arbolB(Nodo ***arbol, int *tamaño_arbol, int *raiz, int llav
         }
         
         *((*arbol)[0]) = *nueva_raiz_nodo;
-        contar_escritura_insercion(); // escritura
+        contar_escritura_insercion(stats); // escritura
         *raiz = 0;
         free(nueva_raiz_nodo);
-        
         // insertar el par original en el hijo apropiado
         if (llave <= split_result.par_mediano.llave) {
-            insertar_arbolB(*arbol, tamaño_arbol, nuevo_indice_izq, llave, valor);
+            insertar_arbolB(*arbol, tamano_arbol, nuevo_indice_izq, llave, valor, stats);
         } else {
-            insertar_arbolB(*arbol, tamaño_arbol, nuevo_indice_der, llave, valor);
+            insertar_arbolB(*arbol, tamano_arbol, nuevo_indice_der, llave, valor, stats);
         }
     }
 }
 
 // funcion para insertar un par en la raiz de un arbol B+
-void insertar_raiz_arbolBPlus(Nodo ***arbol, int *tamaño_arbol, int *raiz, int llave, float valor) {
+void insertar_raiz_arbolBPlus(Nodo ***arbol, int *tamano_arbol, int *raiz, int llave, float valor, StatsIO* stats) {
     int indice_raiz = *raiz;
     
     // LECTURA: Acceso a la raíz
-    contar_lectura_insercion();
+    contar_lectura_insercion(stats);
     
     if (!nodo_lleno(&(*arbol)[indice_raiz][0])) {
-        insertar_arbolBPlus(*arbol, tamaño_arbol, indice_raiz, llave, valor);
+        insertar_arbolBPlus(*arbol, tamano_arbol, indice_raiz, llave, valor, stats);
     } else {
         // split de la raíz
         SplitArbol split_result;
@@ -208,10 +210,10 @@ void insertar_raiz_arbolBPlus(Nodo ***arbol, int *tamaño_arbol, int *raiz, int 
             split_result = split_arbolB((*arbol)[indice_raiz][0]);
         }
         
-        int nuevo_indice_der = (*tamaño_arbol)++;
+        int nuevo_indice_der = (*tamano_arbol)++;
         (*arbol)[nuevo_indice_der] = malloc(sizeof(Nodo));
         *((*arbol)[nuevo_indice_der]) = split_result.nodo_der;
-        contar_escritura_insercion(); // escritura
+        contar_escritura_insercion(stats); // escritura
 
         // arbol B+, si la raiz anterior era hoja se actualizan los punteros
         if (es_raiz_anterior_hoja) {
@@ -219,13 +221,13 @@ void insertar_raiz_arbolBPlus(Nodo ***arbol, int *tamaño_arbol, int *raiz, int 
             split_result.nodo_der.sgte = (*arbol)[indice_raiz][0].sgte;
             // actualizar el nodo derecho con el puntero siguiente
             *((*arbol)[nuevo_indice_der]) = split_result.nodo_der;
-            contar_escritura_insercion();
+            contar_escritura_insercion(stats);
         }
         
-        int nuevo_indice_izq = (*tamaño_arbol)++;
+        int nuevo_indice_izq = (*tamano_arbol)++;
         (*arbol)[nuevo_indice_izq] = malloc(sizeof(Nodo));
         *((*arbol)[nuevo_indice_izq]) = split_result.nodo_izq;
-        contar_escritura_insercion(); // escritura
+        contar_escritura_insercion(stats); // escritura
         
         // crear nueva raiz
         Nodo *nueva_raiz_nodo = malloc(sizeof(Nodo));
@@ -241,23 +243,23 @@ void insertar_raiz_arbolBPlus(Nodo ***arbol, int *tamaño_arbol, int *raiz, int 
         }
 
         *((*arbol)[0]) = *nueva_raiz_nodo;
-        contar_escritura_insercion(); // escritura
+        contar_escritura_insercion(stats); // escritura
         *raiz = 0;
         free(nueva_raiz_nodo);
         // insertar el par original en el hijo apropiado
         if (llave <= split_result.par_mediano.llave) {
-            insertar_arbolBPlus(*arbol, tamaño_arbol, nuevo_indice_izq, llave, valor);
+            insertar_arbolBPlus(*arbol, tamano_arbol, nuevo_indice_izq, llave, valor, stats);
         } else {
-            insertar_arbolBPlus(*arbol, tamaño_arbol, nuevo_indice_der, llave, valor);
+            insertar_arbolBPlus(*arbol, tamano_arbol, nuevo_indice_der, llave, valor, stats);
         }
     }
 }
 
 // funcion principal para insertar en árbol B
-void insertar_en_arbolB(Nodo ***arbol, int *tamaño_arbol, int *raiz, int llave, float valor) {
-    insertar_raiz_arbolB(arbol, tamaño_arbol, raiz, llave, valor);
+void insertar_en_arbolB(Nodo ***arbol, int *tamano_arbol, int *raiz, int llave, float valor, StatsIO* stats) {
+    insertar_raiz_arbolB(arbol, tamano_arbol, raiz, llave, valor, stats);
 }
 // funcion principal para insertar en árbol B+
-void insertar_en_arbolBPlus(Nodo ***arbol, int *tamaño_arbol, int *raiz, int llave, float valor) {
-    insertar_raiz_arbolBPlus(arbol, tamaño_arbol, raiz, llave, valor);
+void insertar_en_arbolBPlus(Nodo ***arbol, int *tamano_arbol, int *raiz, int llave, float valor, StatsIO* stats) {
+    insertar_raiz_arbolBPlus(arbol, tamano_arbol, raiz, llave, valor, stats);
 }

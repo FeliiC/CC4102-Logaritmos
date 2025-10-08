@@ -6,9 +6,15 @@
 #include "operaciones/buscar.c"
 #include "operaciones/crear_arbol.c"
 #include "operaciones/insertar.c"
+#include "operaciones/stats.c"
+
 #define M 1000     // tamano inicial del arreglo de nodos
 
 void ejecutar_experimento(int N){
+    StatsIO stats_arbolB;
+    StatsIO stats_arbolBPlus;
+    iniciar_estadisticas(&stats_arbolB);
+    iniciar_estadisticas(&stats_arbolBPlus);
     printf("Crear arbol\n");
     // Crear árboles
     int tamanoB = 1;
@@ -33,12 +39,12 @@ void ejecutar_experimento(int N){
     while(pares_insertados < N && fread(&pair, sizeof(Pair), 1, archivo) == 1){
         // Crear arbolB
         clock_t inicio_creacion_B = clock();
-        insertar_en_arbolB(&arbolB, &tamanoB, &raizB, pair.llave, pair.valor);
+        insertar_en_arbolB(&arbolB, &tamanoB, &raizB, pair.llave, pair.valor, &stats_arbolB);
         clock_t fin_creacion_B = clock();
         tiempo_creacion_B += ((double)(fin_creacion_B - inicio_creacion_B)) / CLOCKS_PER_SEC;
         // Crear arbolB+
         clock_t inicio_creacion_BPlus = clock();
-        insertar_en_arbolBPlus(&arbolBPlus, &tamanoBPlus, &raizBPlus, pair.llave, pair.valor);
+        insertar_en_arbolBPlus(&arbolBPlus, &tamanoBPlus, &raizBPlus, pair.llave, pair.valor, &stats_arbolBPlus);
         clock_t fin_creacion_BPlus = clock();
         tiempo_creacion_BPlus += ((double)(fin_creacion_BPlus - inicio_creacion_BPlus)) / CLOCKS_PER_SEC;
 
@@ -69,14 +75,14 @@ void ejecutar_experimento(int N){
         // Árbol B
         int cantidad_B=0;
         clock_t inicio_busqueda_B = clock();
-        Pair* resultados_B = buscar_rango_desde_archivo("../datos_bin/arbolB.bin", l, u, &cantidad_B);
+        Pair* resultados_B = buscar_en_arbolB("../datos_bin/arbolB.bin", l, u, &cantidad_B, &stats_arbolB);
         clock_t fin_busqueda_B = clock();
         tiempo_busqueda_B += ((double)(fin_busqueda_B - inicio_busqueda_B)) / CLOCKS_PER_SEC;
         total_resultados_B += cantidad_B;
         //Árbol B+
         int cantidad_BPlus=0;
         clock_t inicio_busqueda_BPlus = clock();
-        Pair* resultados_BPlus = buscar_rango_desde_archivo("../datos_bin/arbolBPlus.bin", l, u, &cantidad_BPlus);
+        Pair* resultados_BPlus = buscar_en_arbolBPlus("../datos_bin/arbolBPlus.bin", l, u, &cantidad_BPlus, &stats_arbolBPlus);
         clock_t fin_busqueda_BPlus = clock();
         tiempo_busqueda_BPlus += ((double)(fin_busqueda_BPlus - inicio_busqueda_BPlus)) / CLOCKS_PER_SEC;
         total_resultados_BPlus += cantidad_BPlus;
@@ -92,18 +98,18 @@ void ejecutar_experimento(int N){
 
     printf("--- Arbol B ---\n");
     printf("Tiempo de creacion: %.6f segundos\n", tiempo_creacion_B);
-    printf("I/Os durante insercion: \n");
+    printf("I/Os durante insercion: %d\n", stats_arbolB.escrituras_insercion + stats_arbolB.lecturas_insercion);
     printf("Tamano arbol: %d nodos\n", tamanoB);
     printf("Tiempo promedio de busqueda: %.6f segundos\n", promedio_busqueda_B);
-    printf("Promedio I/Os de busqueda: \n");
+    printf("Promedio I/Os de busqueda: %d\n", stats_arbolB.lecturas_busqueda);
     printf("Porcentaje promedio de datos encontrados: %.2f%%\n", porcentaje_promedio_B);
 
     printf("--- Arbol B+ ---\n");
     printf("Tiempo de creacion: %.6f segundos\n", tiempo_creacion_BPlus);
-    printf("I/Os durante insercion: \n");
+    printf("I/Os durante insercion: %d\n", stats_arbolBPlus.escrituras_insercion + stats_arbolBPlus.lecturas_insercion);
     printf("Tamano arbol: %d nodos\n", tamanoBPlus);
     printf("Tiempo promedio de busqueda: %.6f segundos\n", promedio_busqueda_BPlus);
-    printf("Promedio I/Os de busqueda: \n");
+    printf("Promedio I/Os de busqueda: %d\n", stats_arbolBPlus.lecturas_busqueda);
     printf("Porcentaje promedio de datos encontrados: %.2f%%\n", porcentaje_promedio_BPlus);
 
     liberar_arbol(arbolB, tamanoB);

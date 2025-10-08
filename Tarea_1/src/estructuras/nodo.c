@@ -16,3 +16,10 @@ typedef struct Nodo {
     int hijos[B+1]; // guarda las posiciones en disco de los 𝑘 + 1 hijos del nodo
     int sgte;   // Guarda la posición en disco de la hoja siguiente a la actual (se utiliza solo en árbol B+)
 } Nodo;
+
+typedef struct StatsIO {
+    int lecturas_busqueda;
+    int escrituras_insercion;
+    int lecturas_insercion;
+    int total_operaciones;
+} StatsIO;

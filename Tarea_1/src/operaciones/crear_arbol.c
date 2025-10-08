@@ -21,7 +21,7 @@ Nodo* inicializar_nodo(int es_interno){
 // Inicializar un árbol 
 Nodo** inicializar_arbol(int tamano_arbol){
     Nodo **arbol = malloc(sizeof(Nodo*) * 1000);
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < 1000; i++) {
         arbol[i] = NULL;
     }
     // Crear nodo raiz

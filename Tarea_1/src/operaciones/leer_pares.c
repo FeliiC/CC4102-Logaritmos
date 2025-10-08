@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include "../estructuras/nodo.c"
 
 // Leer los primeros N pares del archivo
 void leer_pares_desde_archivo(const char* nombre_archivo) {
