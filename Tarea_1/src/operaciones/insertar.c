@@ -73,7 +73,6 @@ void insertar_arbolB(Nodo **arbol, int *tamano_arbol, int indice_nodo, int llave
     // es nodo interno
     int hijo_idx = encontrar_hijo(nodo_actual, llave);
     int indice_hijo = nodo_actual->hijos[hijo_idx];
-    contar_lectura_insercion(stats); // lectura
     if (nodo_lleno(&arbol[indice_hijo][0])) {
         // split del hijo
         SplitArbol split_result = split_arbolB(arbol[indice_hijo][0]);
@@ -126,7 +125,6 @@ void insertar_arbolBPlus(Nodo **arbol, int *tamano_arbol, int indice_nodo, int l
     // es nodo interno
     int hijo_idx = encontrar_hijo(nodo_actual, llave);
     int indice_hijo = nodo_actual->hijos[hijo_idx];
-    contar_lectura_insercion(stats);
     if (nodo_lleno(&arbol[indice_hijo][0])) {
         // split del hijo
         SplitArbol split_result;
@@ -183,7 +181,6 @@ void insertar_arbolBPlus(Nodo **arbol, int *tamano_arbol, int indice_nodo, int l
 */
 void insertar_raiz_arbolB(Nodo ***arbol, int *tamano_arbol, int *raiz, int llave, float valor, StatsIO* stats) {
     int indice_raiz = *raiz;
-    contar_lectura_insercion(stats); // lectura
     if (!nodo_lleno(&(*arbol)[indice_raiz][0])) {
         insertar_arbolB(*arbol, tamano_arbol, indice_raiz, llave, valor, stats);
     } else {
@@ -234,10 +231,6 @@ void insertar_raiz_arbolB(Nodo ***arbol, int *tamano_arbol, int *raiz, int llave
 */
 void insertar_raiz_arbolBPlus(Nodo ***arbol, int *tamano_arbol, int *raiz, int llave, float valor, StatsIO* stats) {
     int indice_raiz = *raiz;
-    
-    // lectura de acceso a la raiz
-    contar_lectura_insercion(stats);
-    
     if (!nodo_lleno(&(*arbol)[indice_raiz][0])) {
         insertar_arbolBPlus(*arbol, tamano_arbol, indice_raiz, llave, valor, stats);
     } else {
